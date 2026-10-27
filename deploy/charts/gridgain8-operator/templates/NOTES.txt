@@ -1,0 +1,26 @@
+{{- if not .Values.crds.enabled }}
+1. Install CRDs first (not included unless crds.enabled=true), for example:
+   helm repo add gridgain8-operator https://gridgain-operator.mariadb.com
+   helm install gridgain8-operator-crds gridgain8-operator/gridgain8-operator-crds
+{{- else }}
+1. CRDs were installed by this chart (crds.enabled=true). Do not uninstall this
+   release while GridGainClusters still exist.
+{{- end }}
+
+{{- if .Values.webhook.cert.certManager.enabled }}
+2. Ensure cert-manager is installed in the cluster (required when webhook.cert.certManager.enabled=true).
+{{- else }}
+2. cert-manager is not required (default built-in webhook TLS). To use cert-manager instead, set webhook.cert.certManager.enabled=true.
+{{- end }}
+
+3. Ensure an image pull secret exists in namespace `{{ .Release.Namespace }}` when pulling from `docker.mariadb.com`, or set `imagePullSecrets: []` and a reachable `image.repository` / `image.tag`.
+
+4. Install the operator into any namespace via helm -n, for example:
+
+   helm install gridgain8-operator ./deploy/charts/gridgain8-operator \
+     --namespace {{ .Release.Namespace }} \
+     --create-namespace
+
+5. Check the deployment:
+
+   kubectl -n {{ .Release.Namespace }} rollout status deploy/gridgain-k8s-operator-controller-manager

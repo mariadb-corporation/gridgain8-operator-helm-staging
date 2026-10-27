@@ -1,0 +1,18 @@
+apiVersion: v2
+name: gridgain8-operator-crds
+description: GridGain8 Operator CRDs
+home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+type: application
+version: 0.4.2
+appVersion: "0.0.0"
+kubeVersion: ">=1.35.0-0"
+maintainers:
+  - email: operator@mariadb.com
+    name: MariaDB Corporation
+  - email: support@mariadb.com
+    name: Support
+keywords:
+  - gridgain
+  - operator
+  - gridgain8-operator
+  - database

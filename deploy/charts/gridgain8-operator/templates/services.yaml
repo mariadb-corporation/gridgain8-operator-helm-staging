@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gridgain-k8s-operator-controller-manager-metrics-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+    control-plane: controller-manager
+spec:
+  ports:
+    - name: metrics
+      port: {{ .Values.metricsService.port }}
+      protocol: TCP
+      targetPort: {{ .Values.metricsService.port }}
+  selector:
+    {{- include "gridgain-k8s-operator.selectorLabels" . | nindent 4 }}
+{{- if not .Values.currentNamespaceOnly }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gridgain-k8s-operator-webhook-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.webhookService.port }}
+      protocol: TCP
+      targetPort: {{ .Values.webhookService.targetPort }}
+  selector:
+    {{- include "gridgain-k8s-operator.selectorLabels" . | nindent 4 }}
+{{- end }}

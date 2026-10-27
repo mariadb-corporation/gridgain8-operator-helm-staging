@@ -1,0 +1,39 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+**Homepage:** <https://github.com/mariadb-corporation/gridgain8-operator-helm>
+
+```bash
+helm repo add gridgain8-operator https://gridgain-operator.mariadb.com
+helm install gridgain8-operator-crds gridgain8-operator/gridgain8-operator-crds
+helm install gridgain8-operator gridgain8-operator/gridgain8-operator \
+  -n <namespace> --create-namespace
+```
+
+The operator image is `docker.mariadb.com/gridgain8-operator` (`linux/amd64`). Configure an image pull secret for `docker.mariadb.com`.
+
+## Requirements
+
+{{ template "chart.kubeVersionLine" . }}
+
+Tested on Kubernetes 1.35 (`KIND_IMAGE=kindest/node:v1.35.0`).
+
+cert-manager is **not** required unless `webhook.cert.certManager.enabled` is set to `true`.
+
+## Namespace
+
+Helm installs all namespaced resources into the release namespace (`helm install ... -n <namespace>`). For example, `-n skysql-system` is supported. Raw Kustomize manifests under `config/default` default to `gridgain-k8s-operator-system` instead.
+
+{{ template "chart.valuesSection" . }}
+
+## cert-manager (optional)
+
+```yaml
+webhook:
+  cert:
+    certManager:
+      enabled: true
+```
+
+When enabled, the chart renders cert-manager Issuer/Certificate resources and mounts the webhook Secret. The operator runs with `--webhook-cert-provider=cert-manager` and cert-manager cainjector patches `ValidatingWebhookConfiguration.caBundle`.

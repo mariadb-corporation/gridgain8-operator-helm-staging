@@ -1,0 +1,283 @@
+{{- if not .Values.currentNamespaceOnly }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gridgain-k8s-operator-leader-election-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+{{- end }}
+---
+{{- if not .Values.currentNamespaceOnly }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gridgain-k8s-operator-gridgaincluster-admin-role
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters
+    verbs:
+      - "*"
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gridgain-k8s-operator-gridgaincluster-editor-role
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gridgain-k8s-operator-gridgaincluster-viewer-role
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gridgain-k8s-operator-manager-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+      - serviceaccounts
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+    # Reason: Create/manage operator-owned resources; read external references (auth passwords, TLS, logging config)
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - delete
+      - get
+      - list
+      - watch
+    # Reason: Drain workflow before scale-down (reconcile_drain.go)
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+    # Reason: Event recorder
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+    # Reason: Event recorder
+  - apiGroups:
+      - apps
+    resources:
+      - controllerrevisions
+    verbs:
+      - get
+      - list
+      - watch
+    # Reason: Upgrade rollback via ControllerRevision lookup
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - update
+      - watch
+    # Reason: Core workload management (delete via ownerReference GC)
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+    # Reason: CR reconciliation + finalizer management (operator never creates/deletes CRs)
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/finalizers
+    verbs:
+      - update
+    # Reason: Finalizer management
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+    # Reason: Read webhook config for built-in TLS bootstrap
+{{- if not .Values.webhook.cert.certManager.enabled }}
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    resourceNames:
+      - {{ include "gridgain-k8s-operator.webhookConfigName" . }}
+    verbs:
+      - update
+      - patch
+    # Reason: Built-in certificate manager patches clientConfig.caBundle (not needed with cert-manager)
+{{- end }}
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - networkpolicies
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+    # Reason: Optional pod-to-pod traffic policies
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gridgain-k8s-operator-leader-election-rolebinding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gridgain-k8s-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "gridgain-k8s-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gridgain-k8s-operator-manager-rolebinding
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gridgain-k8s-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "gridgain-k8s-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

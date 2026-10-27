@@ -1,0 +1,32 @@
+apiVersion: v2
+name: gridgain8-operator
+description: GridGain Kubernetes operator (manager, RBAC, validating webhook). CRDs are a separate chart by default; set crds.enabled to bundle them. Webhook TLS uses built-in certificates by default; cert-manager is optional.
+home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+type: application
+version: 0.4.2
+appVersion: "0.4.2"
+kubeVersion: ">=1.35.0-0"
+maintainers:
+  - email: operator@mariadb.com
+    name: MariaDB Corporation
+  - email: support@mariadb.com
+    name: Support
+keywords:
+  - gridgain
+  - operator
+  - gridgain8-operator
+  - database
+dependencies:
+  - name: gridgain8-operator-crds
+    version: "0.4.2"
+    condition: crds.enabled
+    repository: file://../gridgain8-operator-crds
+annotations:
+  # Operator Lifecycle Manager (OLM) / OperatorHub metadata
+  operators.operatorframework.io/install-modes: |
+    [
+      {"type": "OwnNamespace", "supported": true},
+      {"type": "AllNamespaces", "supported": true},
+      {"type": "SingleNamespace", "supported": false},
+      {"type": "MultiNamespace", "supported": false}
+    ]
