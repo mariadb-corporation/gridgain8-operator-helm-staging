@@ -1,0 +1,64 @@
+apiVersion: v1
+entries:
+  gridgain8-operator:
+  - annotations:
+      operators.operatorframework.io/install-modes: |
+        [
+          {"type": "OwnNamespace", "supported": true},
+          {"type": "AllNamespaces", "supported": true},
+          {"type": "SingleNamespace", "supported": false},
+          {"type": "MultiNamespace", "supported": false}
+        ]
+    apiVersion: v2
+    appVersion: 0.4.2
+    created: "2026-10-27T17:03:30.753991101Z"
+    dependencies:
+    - condition: crds.enabled
+      name: gridgain8-operator-crds
+      repository: file://../gridgain8-operator-crds
+      version: 0.4.2
+    description: GridGain Kubernetes operator (manager, RBAC, validating webhook).
+      CRDs are a separate chart by default; set crds.enabled to bundle them. Webhook
+      TLS uses built-in certificates by default; cert-manager is optional.
+    digest: 1057a2257f355dceb392e84932306da18d73badc131a6bad66f962915434460d
+    home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+    keywords:
+    - gridgain
+    - operator
+    - gridgain8-operator
+    - database
+    kubeVersion: '>=1.35.0-0'
+    maintainers:
+    - email: operator@mariadb.com
+      name: MariaDB Corporation
+    - email: support@mariadb.com
+      name: Support
+    name: gridgain8-operator
+    type: application
+    urls:
+    - gridgain8-operator-0.4.2.tgz
+    version: 0.4.2
+  gridgain8-operator-crds:
+  - apiVersion: v2
+    appVersion: 0.0.0
+    created: "2026-10-27T17:03:31.001531899Z"
+    description: GridGain8 Operator CRDs
+    digest: 1eaa3104a97f5989b64556fadf88addece85605ae52038ec511f937d458e2121
+    home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+    keywords:
+    - gridgain
+    - operator
+    - gridgain8-operator
+    - database
+    kubeVersion: '>=1.35.0-0'
+    maintainers:
+    - email: operator@mariadb.com
+      name: MariaDB Corporation
+    - email: support@mariadb.com
+      name: Support
+    name: gridgain8-operator-crds
+    type: application
+    urls:
+    - gridgain8-operator-crds-0.4.2.tgz
+    version: 0.4.2
+generated: "2026-10-27T17:03:31.001539591Z"
