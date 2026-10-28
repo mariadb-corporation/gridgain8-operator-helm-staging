@@ -10,6 +10,43 @@ entries:
           {"type": "MultiNamespace", "supported": false}
         ]
     apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-10-28T13:28:19.899434314Z"
+    dependencies:
+    - condition: crds.enabled
+      name: gridgain8-operator-crds
+      repository: file://../gridgain8-operator-crds
+      version: 1.0.0
+    description: GridGain Kubernetes operator (manager, RBAC, validating webhook).
+      CRDs are a separate chart by default; set crds.enabled to bundle them. Webhook
+      TLS uses built-in certificates by default; cert-manager is optional.
+    digest: f86d36919ffb3ca5faa97754114357695d46becd14f492acf705be3551aa1c42
+    home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+    keywords:
+    - gridgain
+    - operator
+    - gridgain8-operator
+    - database
+    kubeVersion: '>=1.35.0-0'
+    maintainers:
+    - email: operator@mariadb.com
+      name: MariaDB Corporation
+    - email: support@mariadb.com
+      name: Support
+    name: gridgain8-operator
+    type: application
+    urls:
+    - gridgain8-operator-1.0.0.tgz
+    version: 1.0.0
+  - annotations:
+      operators.operatorframework.io/install-modes: |
+        [
+          {"type": "OwnNamespace", "supported": true},
+          {"type": "AllNamespaces", "supported": true},
+          {"type": "SingleNamespace", "supported": false},
+          {"type": "MultiNamespace", "supported": false}
+        ]
+    apiVersion: v2
     appVersion: 0.4.2
     created: "2026-10-27T17:03:30.753991101Z"
     dependencies:
@@ -41,6 +78,28 @@ entries:
   gridgain8-operator-crds:
   - apiVersion: v2
     appVersion: 0.0.0
+    created: "2026-10-28T13:28:20.158360792Z"
+    description: GridGain8 Operator CRDs
+    digest: a5682ce264d9baa3b27da8f9fae7a38d463c63252a7b91047c08301260f345fd
+    home: https://github.com/mariadb-corporation/gridgain8-operator-helm
+    keywords:
+    - gridgain
+    - operator
+    - gridgain8-operator
+    - database
+    kubeVersion: '>=1.35.0-0'
+    maintainers:
+    - email: operator@mariadb.com
+      name: MariaDB Corporation
+    - email: support@mariadb.com
+      name: Support
+    name: gridgain8-operator-crds
+    type: application
+    urls:
+    - gridgain8-operator-crds-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v2
+    appVersion: 0.0.0
     created: "2026-10-27T17:03:31.001531899Z"
     description: GridGain8 Operator CRDs
     digest: 1eaa3104a97f5989b64556fadf88addece85605ae52038ec511f937d458e2121
@@ -61,4 +120,4 @@ entries:
     urls:
     - gridgain8-operator-crds-0.4.2.tgz
     version: 0.4.2
-generated: "2026-10-27T17:03:31.001539591Z"
+generated: "2026-10-28T13:28:20.158369205Z"
