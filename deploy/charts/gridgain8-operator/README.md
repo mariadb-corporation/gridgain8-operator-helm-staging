@@ -25,6 +25,10 @@ cert-manager is **not** required unless `webhook.cert.certManager.enabled` is se
 
 Helm installs all namespaced resources into the release namespace (`helm install ... -n <namespace>`). For example, `-n skysql-system` is supported. Raw Kustomize manifests under `config/default` default to `gridgain-k8s-operator-system` instead.
 
+## GridGainCluster roles
+
+The chart installs ClusterRoles `gridgain-k8s-operator-gridgaincluster-admin-role` and `gridgain-k8s-operator-gridgaincluster-editor-role` and does not bind them. Binding either role in a namespace is equivalent to creating pods there, including the use of any ServiceAccount in that namespace. Bind them only to subjects who may create pods.
+
 ## Values
 
 | Key | Type | Default | Description |

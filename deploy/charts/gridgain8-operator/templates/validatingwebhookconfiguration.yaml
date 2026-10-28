@@ -14,15 +14,15 @@ webhooks:
       service:
         name: gridgain-k8s-operator-webhook-service
         namespace: {{ .Release.Namespace }}
-        path: /validate-gridgain-gridgain-com-v1alpha1-gridgaincluster
+        path: /validate-gridgain-gridgain-com-v1-gridgaincluster
     failurePolicy: Fail
     timeoutSeconds: 5
-    name: vgridgaincluster-v1alpha1.kb.io
+    name: vgridgaincluster-v1.kb.io
     rules:
       - apiGroups:
           - gridgain.gridgain.com
         apiVersions:
-          - v1alpha1
+          - v1
         operations:
           - CREATE
           - UPDATE

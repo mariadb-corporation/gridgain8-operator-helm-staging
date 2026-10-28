@@ -15,6 +15,13 @@ spec:
     singular: gridgaincluster
   scope: Namespaced
   versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    served: false
+    storage: false
   - additionalPrinterColumns:
     - jsonPath: .spec.replicas
       name: Replicas
@@ -28,7 +35,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1alpha1
+    name: v1
     schema:
       openAPIV3Schema:
         description: GridGainCluster is the Schema for the gridgainclusters API.
@@ -7782,10 +7789,17 @@ spec:
                 format: int32
                 type: integer
               replicas:
-                description: Replicas is the desired replica count last observed from
-                  spec.
+                description: |-
+                  Replicas is the number of pods that exist for the cluster StatefulSet,
+                  including pods that are not Ready. The scale subresource reports this
+                  as the current replica count.
                 format: int32
                 type: integer
+              selector:
+                description: |-
+                  Selector is the label selector of the cluster pods, in label-selector
+                  form. The scale subresource publishes it so an autoscaler can find the pods.
+                type: string
               upgrade:
                 description: Upgrade reports operator-managed rolling upgrade state.
                 properties:
@@ -7905,4 +7919,8 @@ spec:
     served: true
     storage: true
     subresources:
+      scale:
+        labelSelectorPath: .status.selector
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
       status: {}

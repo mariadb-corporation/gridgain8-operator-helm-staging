@@ -41,6 +41,9 @@ rules:
 {{- end }}
 ---
 {{- if not .Values.currentNamespaceOnly }}
+# Binding this role in a namespace is equivalent to creating pods
+# there, including the use of any ServiceAccount in that namespace.
+# Bind it only to subjects who may create pods.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -60,7 +63,18 @@ rules:
       - gridgainclusters/status
     verbs:
       - get
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/scale
+    verbs:
+      - get
+      - patch
+      - update
 ---
+# Binding this role in a namespace is equivalent to creating pods
+# there, including the use of any ServiceAccount in that namespace.
+# Bind it only to subjects who may create pods.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -86,6 +100,14 @@ rules:
       - gridgainclusters/status
     verbs:
       - get
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/scale
+    verbs:
+      - get
+      - patch
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -106,6 +128,12 @@ rules:
       - gridgain.gridgain.com
     resources:
       - gridgainclusters/status
+    verbs:
+      - get
+  - apiGroups:
+      - gridgain.gridgain.com
+    resources:
+      - gridgainclusters/scale
     verbs:
       - get
 ---

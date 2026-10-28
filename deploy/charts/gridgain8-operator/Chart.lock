@@ -1,6 +1,6 @@
 dependencies:
 - name: gridgain8-operator-crds
   repository: file://../gridgain8-operator-crds
-  version: 0.4.2
-digest: sha256:864bc8a87af291807a80c0bbde364f055e89d385787c4d98af0a0aaa933eb69c
-generated: "2026-10-23T11:40:35.870106+02:00"
+  version: 1.0.0
+digest: sha256:154b68de93d2776a533157fa26ddb93bb92133309c27fceb07e592c1c7c7b951
+generated: "2026-10-28T14:22:08.351074+01:00"
