@@ -1,0 +1,113 @@
+# Install namespace is chosen at install time: helm install ... -n <namespace> --create-namespace.
+# All namespaced resources use .Release.Namespace (e.g. skysql-system is supported).
+# Raw Kustomize manifests default to gridgain-k8s-operator-system instead.
+
+# -- CRDs
+crds:
+  # -- Whether this chart should install the CRDs. False by default: install
+  # gridgain8-operator-crds first. Only set true on the initial deploy. If this
+  # chart owns the CRDs and is later uninstalled, GridGainClusters are DELETED.
+  enabled: false
+# -- Whether the operator should watch CRDs only in its own namespace or not.
+# When true, RBAC is downgraded to namespace-scoped Role, webhook is disabled,
+# and only GridGainClusters in the operator's namespace are reconciled.
+currentNamespaceOnly: false
+replicaCount: 1
+image:
+  repository: docker.mariadb.com/gridgain8-operator
+  # -- Image tag. Empty uses the chart appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+# Set to [] if the image is pullable without credentials.
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  # When false, chart expects an existing ServiceAccount named `name` in the release namespace.
+  create: true
+  name: gridgain-k8s-operator-controller-manager
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+metricsService:
+  # -- Operator metrics bind and Service port (HTTP, same as mariadb-enterprise-operator).
+  port: 8080
+# Operator metrics ServiceMonitor (Prometheus Operator CRDs). Same gating as
+# mariadb-enterprise-operator: metrics.enabled is off so a default install does
+# not require those CRDs. The metrics Service on metricsService.port is always
+# created; scrape with annotations, a collector, or enable this block.
+# Operator /metrics is HTTP :8080 with no authn (MEO). Network reachability
+# is the gate; TokenReview is not required, including currentNamespaceOnly.
+metrics:
+  # -- Enable the operator ServiceMonitor. Prometheus Operator CRDs must be installed.
+  enabled: false
+  serviceMonitor:
+    # -- Create the ServiceMonitor when metrics.enabled is true.
+    enabled: true
+    # -- Labels added to the ServiceMonitor (e.g. release: kube-prometheus-stack).
+    additionalLabels: {}
+    # -- Interval to scrape operator metrics
+    interval: 30s
+    # -- Timeout if metrics cannot be retrieved in the interval
+    scrapeTimeout: 25s
+    metricRelabelings: []
+    relabelings: []
+webhookService:
+  port: 443
+  targetPort: 9443
+manager:
+  healthProbeBindAddress: ":8081"
+  leaderElect: true
+  webhookCertPath: /tmp/k8s-webhook-server/serving-certs
+  # -- Alpha feature gates (default off). See docs/feature-gates.md.
+  featureGates:
+    Auth: false
+    CRDTLS: false
+    ControlCenter: false
+    Metrics: false
+    NamedCaches: false
+    Persistence: false
+webhook:
+  cert:
+    # Built-in TLS is the default (no cert-manager). The operator creates the webhook
+    # Secret, writes certs to an emptyDir, and patches ValidatingWebhookConfiguration.caBundle.
+    certManager:
+      # -- Use cert-manager for webhook TLS instead of built-in operator provisioning.
+      enabled: false
+      # -- cert-manager Issuer name (when certManager.enabled is true).
+      issuerName: gridgain-k8s-operator-selfsigned-issuer
+      # -- cert-manager Certificate name (when certManager.enabled is true).
+      servingCertificateName: gridgain-k8s-operator-serving-cert
+      # -- Secret name for webhook TLS material (cert-manager mode).
+      secretName: webhook-server-cert
+livenessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 20
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+terminationGracePeriodSeconds: 10
+pdb:
+  # -- Enable PodDisruptionBudget for the operator.
+  # When enabled with replicaCount: 1, the operator pod becomes unevictable
+  # during voluntary disruptions (node drains), protecting webhook availability
+  # at the cost of potentially delaying node maintenance.
+  enabled: false
+  # -- Minimum number of available operator pods.
+  minAvailable: 1
+validatingWebhook:
+  name: gridgain-k8s-operator-validating-webhook-configuration

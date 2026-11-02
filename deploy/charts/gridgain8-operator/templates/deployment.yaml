@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gridgain-k8s-operator-controller-manager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+    control-plane: controller-manager
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gridgain-k8s-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        {{- include "gridgain-k8s-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gridgain-k8s-operator.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: manager
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /manager
+          args:
+            - --metrics-bind-address=:{{ .Values.metricsService.port }}
+            - --metrics-secure=false
+            {{- if .Values.manager.leaderElect }}
+            - --leader-elect
+            {{- end }}
+            - --health-probe-bind-address={{ .Values.manager.healthProbeBindAddress }}
+            - --webhook-cert-provider={{ if .Values.webhook.cert.certManager.enabled }}cert-manager{{ else }}builtin{{ end }}
+            - --webhook-cert-path={{ .Values.manager.webhookCertPath }}
+            {{- $fg := .Values.manager.featureGates }}
+            {{- if $fg }}
+            - --feature-gates={{ range $i, $k := (keys $fg | sortAlpha) }}{{ if $i }},{{ end }}{{ $k }}={{ index $fg $k }}{{ end }}
+            {{- end }}
+          env:
+            {{- if .Values.currentNamespaceOnly }}
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- end }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metricsService.port }}
+              protocol: TCP
+            - name: webhook-server
+              containerPort: {{ .Values.webhookService.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: {{ .Values.manager.webhookCertPath }}
+              {{- if .Values.webhook.cert.certManager.enabled }}
+              readOnly: true
+              {{- end }}
+      volumes:
+        - name: webhook-certs
+          {{- if .Values.webhook.cert.certManager.enabled }}
+          secret:
+            secretName: {{ .Values.webhook.cert.certManager.secretName }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}

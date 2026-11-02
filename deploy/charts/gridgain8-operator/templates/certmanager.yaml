@@ -1,0 +1,27 @@
+{{- if and (not .Values.currentNamespaceOnly) .Values.webhook.cert.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.webhook.cert.certManager.issuerName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.webhook.cert.certManager.servingCertificateName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gridgain-k8s-operator.commonLabels" . | nindent 4 }}
+spec:
+  dnsNames:
+    - gridgain-k8s-operator-webhook-service.{{ .Release.Namespace }}.svc
+    - gridgain-k8s-operator-webhook-service.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.webhook.cert.certManager.issuerName }}
+  secretName: {{ .Values.webhook.cert.certManager.secretName }}
+{{- end }}
