@@ -3778,7 +3778,7 @@ spec:
                     type: string
                   tag:
                     description: |-
-                      Tag is the image tag. If empty, the operator applies a default tied to the supported GridGain 8 line.
+                      Tag is the image tag. If empty, the operator applies 8.10.0.
                       Operator default probes require GridGain 8.9.37 or newer.
                     type: string
                 required:
